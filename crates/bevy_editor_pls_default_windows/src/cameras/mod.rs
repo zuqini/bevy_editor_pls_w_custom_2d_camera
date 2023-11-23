@@ -3,6 +3,13 @@ pub mod camera_3d_free;
 pub mod camera_3d_panorbit;
 use crate::scenes::NotInScene;
 
+use bevy::core_pipeline::core_2d;
+use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
+use bevy::math::*;
+use bevy::render::camera::{Camera, CameraRenderGraph};
+use bevy::render::primitives::Frustum;
+use bevy::render::view::VisibleEntities;
+
 use bevy::render::camera::RenderTarget;
 use bevy::render::view::RenderLayers;
 use bevy::utils::HashSet;
@@ -265,7 +272,7 @@ fn spawn_editor_cameras(mut commands: Commands, editor: Res<Editor>) {
     ));
 
     commands.spawn((
-        Camera2dBundle {
+        Camera2dPerspectiveBundle {
             camera: Camera {
                 //  Prevent multiple cameras from having the same priority.
                 order: editor_cam_priority + 2,
@@ -287,6 +294,37 @@ fn spawn_editor_cameras(mut commands: Commands, editor: Res<Editor>) {
         NotInScene,
         render_layers,
     ));
+}
+
+#[derive(Bundle)]
+pub struct Camera2dPerspectiveBundle {
+    pub camera: Camera,
+    pub camera_render_graph: CameraRenderGraph,
+    pub projection: PerspectiveProjection,
+    pub visible_entities: VisibleEntities,
+    pub frustum: Frustum,
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
+    pub camera_2d: Camera2d,
+    pub tonemapping: Tonemapping,
+    pub deband_dither: DebandDither,
+}
+
+impl Default for Camera2dPerspectiveBundle {
+    fn default() -> Self {
+        Self {
+            camera_render_graph: CameraRenderGraph::new(core_2d::graph::NAME),
+            camera: Default::default(),
+            projection: Default::default(),
+            visible_entities: Default::default(),
+            frustum: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+            camera_2d: Default::default(),
+            tonemapping: Tonemapping::None,
+            deband_dither: DebandDither::Disabled,
+        }
+    }
 }
 
 fn set_editor_cam_active(
