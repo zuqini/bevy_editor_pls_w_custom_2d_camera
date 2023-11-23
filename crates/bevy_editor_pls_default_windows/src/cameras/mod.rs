@@ -52,9 +52,9 @@ pub struct CameraWindow;
 
 #[derive(Clone, Copy, PartialEq, Default)]
 pub enum EditorCamKind {
+    #[default]
     D2PanZoom,
     D3Free,
-    #[default]
     D3PanOrbit,
 }
 

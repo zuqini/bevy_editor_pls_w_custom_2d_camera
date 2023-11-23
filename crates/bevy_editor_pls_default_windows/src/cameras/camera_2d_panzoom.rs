@@ -27,7 +27,7 @@ impl Plugin for PanCamPlugin {
 
 // Zoom doesn't work on bevy 0.5 due to: https://github.com/bevyengine/bevy/pull/2015
 fn camera_zoom(
-    mut query: Query<(&PanCamControls, &mut OrthographicProjection)>,
+    mut query: Query<(&PanCamControls, &PerspectiveProjection, &mut Transform)>,
     mut scroll_events: EventReader<MouseWheel>,
 ) {
     let pixels_per_line = 100.; // Maybe make configurable?
@@ -43,8 +43,10 @@ fn camera_zoom(
         return;
     }
 
-    for (_cam, mut projection) in query.iter_mut() {
-        projection.scale = (projection.scale * (1. + -scroll * 0.001)).max(0.00001);
+    for (_cam, _projection, mut transform) in query.iter_mut() {
+        transform.translation.z += scroll;
+
+        //projection.scale = (projection.scale * (1. + -scroll * 0.001)).max(0.00001);
     }
 }
 
@@ -52,7 +54,7 @@ fn camera_movement(
     editor: Res<Editor>,
     window: Query<&Window>,
     mouse_buttons: Res<Input<MouseButton>>,
-    mut query: Query<(&PanCamControls, &mut Transform, &OrthographicProjection)>,
+    mut query: Query<(&PanCamControls, &mut Transform, &PerspectiveProjection)>,
     mut last_pos: Local<Option<Vec2>>,
 ) {
     let Ok(window) = window.get(editor.window()) else {
@@ -66,7 +68,7 @@ fn camera_movement(
     };
     let delta = current_pos - last_pos.unwrap_or(current_pos);
 
-    for (cam, mut transform, projection) in query.iter_mut() {
+    for (cam, mut transform, _projection) in query.iter_mut() {
         if !cam.enabled {
             continue;
         }
@@ -76,10 +78,11 @@ fn camera_movement(
             .iter()
             .any(|btn| mouse_buttons.pressed(*btn))
         {
-            let scaling = Vec2::new(
-                window.width() / projection.area.width(),
-                window.height() / projection.area.height(),
-            ) * projection.scale;
+            // let scaling = Vec2::new(
+            //     window.width() / projection.area.width(),
+            //     window.height() / projection.area.height(),
+            // ) * projection.scale;
+            let scaling = 1.;
 
             transform.translation -= (delta * scaling).extend(0.);
         }
