@@ -526,7 +526,7 @@ fn initial_camera_setup(
             ),
             With<EditorCamera3dPanOrbit>,
         >,
-        Query<&Transform, (With<Camera2d>, Without<EditorCamera>)>,
+        Query<&Transform, (With<Camera2d>, With<PerspectiveProjection>, Without<EditorCamera>)>,
         Query<&Transform, (With<Camera3d>, Without<EditorCamera>)>,
     )>,
 ) {
